@@ -2,7 +2,7 @@
 
 <div align="center">
   
-  [![Node.js Version](https://img.shields.io/badge/Node.js-v22+-green.svg?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+  [![Node.js Version](https://img.shields.io/badge/Node.js-v20+-green.svg?style=for-the-badge&logo=node.js)](https://nodejs.org/)
   [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg?style=for-the-badge&logo=javascript)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
   [![License](https://img.shields.io/badge/License-MIT-red.svg?style=for-the-badge)](LICENSE)
   
@@ -24,7 +24,7 @@
 
 ## 📋 Requirements
 
-- **Node.js v22 or higher**
+- **Node.js v20 or higher**
 - **Telegram Bot Token** (Get from [@BotFather](https://t.me/BotFather))
 - **NPM or Yarn** package manager
 

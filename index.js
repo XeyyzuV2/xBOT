@@ -1,10 +1,10 @@
 
 const [major] = process.versions.node.split('.').map(Number)
-if (major < 22) {
+if (major < 20) {
   console.error(chalk.red.bold(`
 ╔═══════════════════════════════════════════════════════════════════════════════════════╗
 ║                                      ERROR                                            ║
-║                          Minimal Node.js v22 dibutuhkan                          ║
+║                          Minimal Node.js v20 dibutuhkan                          ║
 ║                              Versi saat ini: v${process.version}                                ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════╝
 `))
