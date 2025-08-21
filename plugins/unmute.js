@@ -1,4 +1,5 @@
 import { requireAdmin, requireBotAdmin } from '../utils.js';
+import { logEvent } from '../logger.js';
 
 const handler = async ({ conn, m }) => {
   if (!await requireAdmin(conn, m)) return;
@@ -24,8 +25,14 @@ const handler = async ({ conn, m }) => {
       can_add_web_page_previews: true,
     });
 
-    conn.sendMessage(chatId, `✅ Pengguna ${targetUsername} telah di-unmute. Mereka sekarang bisa mengirim pesan lagi.`, {
+    await conn.sendMessage(chatId, `✅ Pengguna ${targetUsername} telah di-unmute. Mereka sekarang bisa mengirim pesan lagi.`, {
       reply_to_message_id: m.message_id
+    });
+
+    await logEvent(conn, chatId, 'unmute', {
+        chat: m.chat,
+        admin: m.from,
+        user: m.reply_to_message.from,
     });
   } catch (err) {
     console.error('Unmute error:', err);

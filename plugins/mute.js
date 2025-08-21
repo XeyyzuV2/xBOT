@@ -1,4 +1,5 @@
 import { isOwner, isGroupAdmin, requireAdmin, requireBotAdmin } from '../utils.js';
+import { logEvent } from '../logger.js';
 
 const handler = async ({ conn, m }) => {
   if (!await requireAdmin(conn, m)) return;
@@ -36,11 +37,14 @@ const handler = async ({ conn, m }) => {
       can_add_web_page_previews: false,
     });
 
-    // Also, create an unmute command.
-    const unmuteCommand = `/unmute`;
-
-    conn.sendMessage(chatId, `✅ Pengguna ${targetUsername} telah dibisukan. Mereka tidak bisa mengirim pesan sampai di-unmute.`, {
+    await conn.sendMessage(chatId, `✅ Pengguna ${targetUsername} telah dibisukan. Mereka tidak bisa mengirim pesan sampai di-unmute.`, {
       reply_to_message_id: m.message_id
+    });
+
+    await logEvent(conn, chatId, 'mute', {
+        chat: m.chat,
+        admin: m.from,
+        user: m.reply_to_message.from,
     });
   } catch (err) {
     console.error('Mute error:', err);

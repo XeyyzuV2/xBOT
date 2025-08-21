@@ -14,5 +14,49 @@
     "reply_to_message_to_pin": "Reply to the message you want to pin.",
     "reply_to_message_to_delete": "Reply to the message you want to delete."
   },
-  "language_changed": "✅ Language for this group has been changed to English."
+  "language_changed": "✅ Language for this group has been changed to English.",
+  "welcome": {
+    "enabled": "✅ Welcome system has been enabled.",
+    "disabled": "❌ Welcome system has been disabled.",
+    "set_usage": "Usage: /welcome set <message text>\nPlaceholders: {first_name}, {mention}, {group_name}",
+    "set_success": "✅ Welcome message has been set to:\n{text}",
+    "status_header": "⚙️ Welcome Settings",
+    "status_message": "Message: {message}"
+  },
+  "verify": {
+    "enabled": "✅ New member verification has been enabled.",
+    "disabled": "❌ New member verification has been disabled.",
+    "action_usage": "Usage: /verify action <mute|kick>",
+    "action_success": "✅ Failed verification action set to: {action}.",
+    "status_header": "⚙️ Verification Settings",
+    "status_action": "Failed Action: {action}"
+  },
+  "log_config": {
+      "status_header": "Log Channel Status: {status}",
+      "usage": "Usage: /setlog <channel_id> or /setlog off",
+      "disabled": "✅ Logging has been disabled for this group.",
+      "invalid_id": "Invalid Channel ID. Please enter a correct channel ID (number).",
+      "test_message": "✅ This channel has been successfully set as the log channel for the group: {groupTitle}",
+      "set_success": "✅ Log channel has been set to {channelId}.",
+      "set_fail": "Failed to set log channel. Make sure I have been added to that channel and have permission to send messages. Error: {error}"
+  },
+  "antispam": {
+    "enabled": "✅ Anti-Spam has been enabled.",
+    "disabled": "❌ Anti-Spam has been disabled.",
+    "set_flood_usage": "Incorrect usage. Example: /antispam set flood 10 5 (10 messages in 5 seconds)",
+    "set_flood_success": "✅ Flood rule set to {count} messages / {windowSec} seconds.",
+    "set_unknown": "Unknown setting. Use: /antispam set flood <count> <window>",
+    "whitelist_add_usage": "Usage: /antispam whitelist add <domain.com>",
+    "whitelist_add_success": "✅ Domain {domain} has been added to the whitelist.",
+    "whitelist_remove_usage": "Usage: /antispam whitelist remove <domain.com>",
+    "whitelist_remove_success": "✅ Domain {domain} has been removed from the whitelist.",
+    "whitelist_list_empty": "The whitelist is empty.",
+    "whitelist_list_header": "📜 Whitelisted Domains:",
+    "whitelist_usage": "Usage: /antispam whitelist <add|remove|list> [domain]",
+    "status_header": "⚙️ Anti-Spam Settings",
+    "status_current": "Status: {status}",
+    "status_flood_rule": "Flood Rule: {rule}",
+    "status_whitelist_count": "Whitelisted Domains: {count}",
+    "status_usage": "Use sub-commands:\non, off, set flood, whitelist"
+  }
 }

@@ -144,7 +144,8 @@ These commands can only be used by the bot owner defined in `config.js`.
 | Command | Description |
 |---------|-------------|
 | `/restart` | Restarts the bot process. |
-| `/broadcast <text>` | Sends a message to all chats the bot is in. |
+| `/broadcast <text>` | Sends a message to all chats (with confirmation step). |
+| `/stats` | Shows bot statistics (uptime, memory, etc.). |
 
 ## 👮 Admin Commands
 
@@ -152,6 +153,7 @@ These commands can be used by group administrators. Most commands require you to
 
 | Command | Description |
 |---------|-------------|
+| `/menu` or `/settings` | Opens the new interactive settings menu. |
 | `/ban` or `/kick` | Bans a user from the group. |
 | `/mute` | Mutes a user, preventing them from sending messages. |
 | `/unmute` | Unmutes a previously muted user. |
@@ -159,6 +161,21 @@ These commands can be used by group administrators. Most commands require you to
 | `/demote` | Demotes an admin back to a regular user. |
 | `/pin` | Pins the message you replied to. |
 | `/del` | Deletes the message you replied to. |
+
+### Anti-Spam Commands
+- `/antispam on|off`: Enables or disables the anti-spam module.
+- `/antispam set flood <count> <seconds>`: Sets the flood detection rule.
+- `/antispam whitelist <add|remove|list> [domain]`: Manages the URL whitelist.
+
+### Welcome & Verify Commands
+- `/welcome on|off`: Enables or disables the welcome message system.
+- `/welcome set <message>`: Sets the custom welcome message. Use placeholders like `{first_name}`, `{mention}`, `{group_name}`.
+- `/verify on|off`: Enables or disables new member verification.
+- `/verify action <mute|kick>`: Sets the action taken when a user fails verification.
+
+### Logging Commands
+- `/setlog <channel_id>`: Sets a channel to receive moderation logs.
+- `/setlog off`: Disables logging for the group.
 
 
 ## 🤝 Contributing
