@@ -40,6 +40,25 @@
       "set_success": "✅ Channel log telah diatur ke {channelId}.",
       "set_fail": "Gagal mengatur channel log. Pastikan saya telah ditambahkan ke channel tersebut dan memiliki izin untuk mengirim pesan. Error: {error}"
   },
+  "menu": {
+      "main_text": "⚙️ *Menu Pengaturan Bot*\n\nPilih kategori untuk dikonfigurasi.",
+      "main_btn_antispam": "🛡 Anti-Spam",
+      "main_btn_welcome": "👋 Welcome",
+      "main_btn_log": "📜 Logging",
+      "main_btn_lang": "🌐 Bahasa",
+      "main_btn_close": "❌ Tutup",
+      "back_btn": "Kembali",
+      "antispam_text": "🛡 *Pengaturan Anti-Spam*\n\nStatus saat ini: {status}",
+      "antispam_btn_toggle": "Toggle Anti-Spam: {status}",
+      "welcome_text": "👋 *Pengaturan Welcome & Verifikasi*\n\nWelcome: {welcomeStatus}\nVerifikasi: {verifyStatus}",
+      "welcome_btn_toggle_welcome": "Toggle Welcome: {status}",
+      "welcome_btn_toggle_verify": "Toggle Verifikasi: {status}",
+      "log_text": "📜 *Pengaturan Logging*\n\nStatus saat ini: {status}\n\nGunakan /setlog untuk mengubah channel.",
+      "lang_text": "🌐 *Pengaturan Bahasa*\n\nBahasa saat ini: {lang}",
+      "lang_btn_id": "🇮🇩 Indonesia",
+      "lang_btn_en": "🇬🇧 English",
+      "admin_only_error": "Anda harus menjadi admin untuk menggunakan menu ini."
+  },
   "premium": {
       "owner_only": "Perintah ini hanya untuk Owner Bot.",
       "enable_usage": "Penggunaan: /premium enable <jumlah_hari>",

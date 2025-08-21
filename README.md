@@ -155,7 +155,8 @@ These commands can be used by group administrators. Most commands require you to
 
 | Command | Description |
 |---------|-------------|
-| `/menu` or `/settings` | Opens the new interactive settings menu. |
+| `/menu` or `/settings` | Opens the interactive settings dashboard. |
+| `/ahelp` | (Reply to a user) Opens a quick moderation menu for that user. |
 | `/premium status` | Checks the group's premium status. |
 | `/ban` or `/kick` | Bans a user from the group. |
 | `/mute` | Mutes a user, preventing them from sending messages. |

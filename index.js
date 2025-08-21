@@ -24,6 +24,7 @@ import { handleNewMember, handleVerification } from './plugins/welcome.js'
 import { logEvent } from './logger.js'
 import { handleBroadcastCallback } from './plugins/broadcast.js';
 import { handleMenuCallback } from './plugins/menu.js';
+import { handleModerationCallback } from './plugins/ahelp.js';
 import { init as initWrapper, conn as wrappedConn } from './telegram-wrapper.js';
 
 const gradient = (text, colors) => {
@@ -177,6 +178,9 @@ bot.on('callback_query', async (cb) => {
   }
   if (cb.data && (cb.data.startsWith('menu:') || cb.data.startsWith('toggle:'))) {
     return handleMenuCallback(wrappedConn, cb);
+  }
+  if (cb.data && cb.data.startsWith('mod:')) {
+    return handleModerationCallback(wrappedConn, cb);
   }
 
   const m = { callback_query: cb }
