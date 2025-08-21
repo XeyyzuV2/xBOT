@@ -1,30 +1,13 @@
-import { isGroupAdmin, botIsAdmin } from '../utils.js';
+import { requireAdmin, requireBotAdmin } from '../utils.js';
 
 const handler = async ({ conn, m }) => {
-  const chatId = m.chat.id;
+  if (!await requireAdmin(conn, m)) return;
+  if (!await requireBotAdmin(conn, m, ['can_pin_messages'])) return;
 
-  if (m.chat.type !== 'group' && m.chat.type !== 'supergroup') {
-    return conn.sendMessage(chatId, 'Perintah ini hanya bisa digunakan di dalam grup.', {
-      reply_to_message_id: m.message_id
-    });
-  }
+  const chatId = m.chat.id;
 
   if (!m.reply_to_message) {
     return conn.sendMessage(chatId, 'Balas pesan yang ingin Anda sematkan (pin).', {
-      reply_to_message_id: m.message_id
-    });
-  }
-
-  const senderIsAdmin = await isGroupAdmin(conn, chatId, m.from.id);
-  if (!senderIsAdmin) {
-    return conn.sendMessage(chatId, 'Hanya admin yang bisa menggunakan perintah ini.', {
-      reply_to_message_id: m.message_id
-    });
-  }
-
-  const botAdminData = await botIsAdmin(conn, chatId);
-  if (!botAdminData || !botAdminData.can_pin_messages) {
-    return conn.sendMessage(chatId, 'Saya tidak memiliki izin untuk menyematkan pesan di grup ini.', {
       reply_to_message_id: m.message_id
     });
   }

@@ -1,0 +1,18 @@
+{
+  "errors": {
+    "must_be_group": "This command can only be used in a group.",
+    "admin_only": "This command is for group admins only.",
+    "bot_must_be_admin": "I must be an admin in this group to perform that command.",
+    "bot_missing_perms": "I lack the required permissions to do this. Missing permissions: {missingPerms}"
+  },
+  "general": {
+    "reply_to_user_to_ban": "Reply to the user you want to ban.",
+    "reply_to_user_to_promote": "Reply to the user you want to promote to admin.",
+    "reply_to_user_to_demote": "Reply to the admin you want to demote.",
+    "reply_to_user_to_mute": "Reply to the user you want to mute.",
+    "reply_to_user_to_unmute": "Reply to the user you want to unmute.",
+    "reply_to_message_to_pin": "Reply to the message you want to pin.",
+    "reply_to_message_to_delete": "Reply to the message you want to delete."
+  },
+  "language_changed": "✅ Language for this group has been changed to English."
+}

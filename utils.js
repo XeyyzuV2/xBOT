@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
 import config from './config.js';
+import { t } from './i18n.js';
 
 /**
  * Sends a media file to a Telegram chat. It automatically determines the type of media (photo, video, or document) based on the file extension.
@@ -108,4 +109,55 @@ export async function botIsAdmin(conn, chatId) {
     console.error(chalk.red.bold('❌ botIsAdmin error:'), chalk.gray(error.message));
     return null;
   }
+}
+
+/**
+ * A guard function that checks if the message sender is a group admin.
+ * If not, it replies with an error message and returns false.
+ * @param {object} conn - The Telegram bot instance.
+ * @param {object} m - The message object.
+ * @returns {Promise<boolean>} True if the sender is an admin, false otherwise.
+ */
+export async function requireAdmin(conn, m) {
+    const chatId = m.chat.id;
+    const senderId = m.from.id;
+
+    if (m.chat.type !== 'group' && m.chat.type !== 'supergroup') {
+        await conn.sendMessage(chatId, await t(chatId, 'errors.must_be_group'), { reply_to_message_id: m.message_id });
+        return false;
+    }
+
+    const isAdmin = await isGroupAdmin(conn, chatId, senderId);
+    if (!isAdmin) {
+        await conn.sendMessage(chatId, await t(chatId, 'errors.admin_only'), { reply_to_message_id: m.message_id });
+        return false;
+    }
+    return true;
+}
+
+/**
+ * A guard function that checks if the bot has the required permissions in a group.
+ * If not, it replies with an error message and returns false.
+ * @param {object} conn - The Telegram bot instance.
+ * @param {object} m - The message object.
+ * @param {string[]} perms - An array of required permission keys (e.g., 'can_restrict_members').
+ * @returns {Promise<boolean>} True if the bot has all required permissions, false otherwise.
+ */
+export async function requireBotAdmin(conn, m, perms = []) {
+    const chatId = m.chat.id;
+    const botMember = await botIsAdmin(conn, chatId);
+
+    if (!botMember) {
+        await conn.sendMessage(chatId, await t(chatId, 'errors.bot_must_be_admin'), { reply_to_message_id: m.message_id });
+        return false;
+    }
+
+    const missingPerms = perms.filter(p => !botMember[p]);
+    if (missingPerms.length > 0) {
+        const message = await t(chatId, 'errors.bot_missing_perms', { missingPerms: missingPerms.join(', ') });
+        await conn.sendMessage(chatId, message, { reply_to_message_id: m.message_id });
+        return false;
+    }
+
+    return true;
 }

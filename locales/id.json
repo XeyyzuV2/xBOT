@@ -1,0 +1,18 @@
+{
+  "errors": {
+    "must_be_group": "Perintah ini hanya bisa digunakan di dalam grup.",
+    "admin_only": "Perintah ini hanya untuk admin grup.",
+    "bot_must_be_admin": "Saya harus menjadi admin di grup ini untuk melakukan perintah tersebut.",
+    "bot_missing_perms": "Saya kekurangan izin untuk melakukan ini. Izin yang dibutuhkan: {missingPerms}"
+  },
+  "general": {
+    "reply_to_user_to_ban": "Balas pesan pengguna yang ingin Anda ban.",
+    "reply_to_user_to_promote": "Balas pesan pengguna yang ingin Anda promosikan menjadi admin.",
+    "reply_to_user_to_demote": "Balas pesan admin yang ingin Anda turunkan jabatannya.",
+    "reply_to_user_to_mute": "Balas pesan pengguna yang ingin Anda bisukan (mute).",
+    "reply_to_user_to_unmute": "Balas pesan pengguna yang ingin Anda aktifkan kembali (unmute).",
+    "reply_to_message_to_pin": "Balas pesan yang ingin Anda sematkan (pin).",
+    "reply_to_message_to_delete": "Balas pesan yang ingin Anda hapus."
+  },
+  "language_changed": "✅ Bahasa untuk grup ini telah diubah ke Bahasa Indonesia."
+}
