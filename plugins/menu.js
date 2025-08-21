@@ -2,7 +2,7 @@ import fs from 'fs/promises'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import moment from 'moment-timezone'
-import config from '../config.js'
+import { isOwner } from '../utils.js';
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -14,8 +14,8 @@ const MAX_MESSAGE_LENGTH = 3500
 let handler = async ({ conn, m }) => {
   const name = m.from?.first_name || 'Pengguna'
   const userId = m.from?.id
-  const isOwner = config.owner.includes(userId)
-  const role = isOwner ? 'Owner' : 'User'
+  const userIsOwner = isOwner(userId)
+  const role = userIsOwner ? 'Owner' : 'User'
   const waktu = moment().tz('Asia/Jakarta').format('dddd, DD MMMM YYYY HH:mm:ss')
   
   const args = m.text?.split(' ') || []

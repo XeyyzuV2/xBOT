@@ -103,6 +103,30 @@ export default handler;
 - `m`: The full message object from `node-telegram-bot-api`.
 - `text`: A string containing the arguments passed to the command.
 
+## 👑 Owner Commands
+
+These commands can only be used by the bot owner defined in `config.js`.
+
+| Command | Description |
+|---------|-------------|
+| `/restart` | Restarts the bot process. |
+| `/broadcast <text>` | Sends a message to all chats the bot is in. |
+
+## 👮 Admin Commands
+
+These commands can be used by group administrators. Most commands require you to reply to a user's message.
+
+| Command | Description |
+|---------|-------------|
+| `/ban` or `/kick` | Bans a user from the group. |
+| `/mute` | Mutes a user, preventing them from sending messages. |
+| `/unmute` | Unmutes a previously muted user. |
+| `/promote` | Promotes a user to a group admin. |
+| `/demote` | Demotes an admin back to a regular user. |
+| `/pin` | Pins the message you replied to. |
+| `/del` | Deletes the message you replied to. |
+
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to fork the repository, make changes, and open a pull request.

@@ -39,6 +39,7 @@ console.log(chalk.magenta.italic('                                    👨‍�
 const bot = new TelegramBot(config.telegramBotToken, { polling: true })
 const plugins = new Map()
 const pluginsDir = path.join(process.cwd(), 'plugins')
+global.chatIds = new Set()
 
 async function loadPlugins() {
   plugins.clear()
@@ -77,6 +78,7 @@ bot.on('message', async (msg) => {
   const from = msg.from
   const chat = msg.chat
   const text = msg.text || ''
+  if (chat) global.chatIds.add(chat.id)
   const userTag = from.username ? `@${from.username}` : from.first_name
   const chatType = chat.type === 'private' ? 'PRIVATE' : 'GROUP'
   const chatName = chat.type === 'group' ? chat.title : 'Direct Message'
