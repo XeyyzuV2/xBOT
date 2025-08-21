@@ -1,34 +1,15 @@
-import { isGroupAdmin, botIsAdmin } from '../utils.js';
+import { requireAdmin, requireBotAdmin } from '../utils.js';
 
 const handler = async ({ conn, m }) => {
-  const chatId = m.chat.id;
+  // requireAdmin will handle the group & admin check and reply automatically.
+  if (!await requireAdmin(conn, m)) return;
+  // requireBotAdmin will handle the bot permission check and reply automatically.
+  if (!await requireBotAdmin(conn, m, ['can_delete_messages'])) return;
 
-  if (m.chat.type !== 'group' && m.chat.type !== 'supergroup') {
-    // Silently ignore in private chats
-    return;
-  }
+  const chatId = m.chat.id;
 
   if (!m.reply_to_message) {
     return conn.sendMessage(chatId, 'Balas pesan yang ingin Anda hapus.', {
-      reply_to_message_id: m.message_id
-    });
-  }
-
-  const senderIsAdmin = await isGroupAdmin(conn, chatId, m.from.id);
-  if (!senderIsAdmin) {
-    // To avoid clutter, don't send a message if a non-admin tries to use it.
-    // Just delete their /del command.
-    try {
-        await conn.deleteMessage(chatId, m.message_id);
-    } catch (e) {
-        console.error("Couldn't delete non-admin's /del command:", e.message);
-    }
-    return;
-  }
-
-  const botAdminData = await botIsAdmin(conn, chatId);
-  if (!botAdminData || !botAdminData.can_delete_messages) {
-    return conn.sendMessage(chatId, 'Saya tidak memiliki izin untuk menghapus pesan di grup ini.', {
       reply_to_message_id: m.message_id
     });
   }
