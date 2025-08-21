@@ -24,6 +24,7 @@ import { handleNewMember, handleVerification } from './plugins/welcome.js'
 import { logEvent } from './logger.js'
 import { handleBroadcastCallback } from './plugins/broadcast.js';
 import { handleMenuCallback } from './plugins/menu.js';
+import { init as initWrapper, conn as wrappedConn } from './telegram-wrapper.js';
 
 const gradient = (text, colors) => {
   const lines = text.split('\n')
@@ -43,6 +44,7 @@ console.log(chalk.cyan.bold('                                     ✨ xBOT Versi
 console.log(chalk.magenta.italic('                                    👨‍💻 by XeyLabs 👨‍💻\n'))
 
 const bot = new TelegramBot(config.telegramBotToken, { polling: true })
+initWrapper(bot); // Initialize the API wrapper
 const plugins = new Map()
 const pluginsDir = path.join(process.cwd(), 'plugins')
 global.chatIds = new Set()
@@ -103,7 +105,8 @@ async function handleAntiSpam(conn, msg) {
   }
 
   recordMessage(chat.id, from.id, text);
-  const violation = checkSpam(chat.id, from.id, text, config.antiSpam);
+  const isPremium = config.premiumUntil && config.premiumUntil > Date.now();
+  const violation = checkSpam(chat.id, from.id, text, config.antiSpam, isPremium);
 
   if (violation) {
     const newWarningCount = utils.recordWarning(chat.id, from.id);
@@ -138,7 +141,7 @@ async function handleAntiSpam(conn, msg) {
 
 bot.on('message', async (msg) => {
   // Anti-spam check
-  if (await handleAntiSpam(bot, msg)) {
+  if (await handleAntiSpam(wrappedConn, msg)) {
     return; // Stop processing if spam was handled
   }
 
@@ -157,33 +160,33 @@ bot.on('message', async (msg) => {
   const handler = plugins.get(command)
   if (handler) {
     try {
-      await handler({ conn: bot, m: msg, text: args.join(' '), ...utils })
+      await handler({ conn: wrappedConn, m: msg, text: args.join(' '), ...utils })
     } catch (e) {
       console.error(chalk.red.bold(`❌ Error on command /${command}:`), chalk.gray(e))
-      bot.sendMessage(chat.id, '❌ Error saat menjalankan perintah.')
+      wrappedConn.sendMessage(chat.id, '❌ Error saat menjalankan perintah.')
     }
   }
 })
 
 bot.on('callback_query', async (cb) => {
   if (cb.data && cb.data.startsWith('verify_human_')) {
-    return handleVerification(bot, cb);
+    return handleVerification(wrappedConn, cb);
   }
   if (cb.data && cb.data.startsWith('broadcast:')) {
-    return handleBroadcastCallback(bot, cb);
+    return handleBroadcastCallback(wrappedConn, cb);
   }
   if (cb.data && (cb.data.startsWith('menu:') || cb.data.startsWith('toggle:'))) {
-    return handleMenuCallback(bot, cb);
+    return handleMenuCallback(wrappedConn, cb);
   }
 
   const m = { callback_query: cb }
   for (const [, handler] of plugins.entries()) {
     if (typeof handler.before === 'function') {
       try {
-        await handler.before(m, { conn: bot, ...utils })
+        await handler.before(m, { conn: wrappedConn, ...utils })
       } catch (e) {
         console.error(chalk.red.bold('❌ Callback error:'), chalk.gray(e))
-        bot.answerCallbackQuery(cb.id, { text: '❌ Callback error' })
+        wrappedConn.answerCallbackQuery(cb.id, { text: '❌ Callback error' })
       }
     }
   }
@@ -203,7 +206,7 @@ chokidar.watch([pluginsDir, path.join(process.cwd(), 'config.js'), path.join(pro
 })
 
 bot.on('new_chat_members', (msg) => {
-    handleNewMember(bot, msg);
+    handleNewMember(wrappedConn, msg);
 });
 
 loadPlugins()

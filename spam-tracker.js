@@ -64,9 +64,10 @@ export function recordMessage(chatId, userId, messageText) {
  * @param {string|number} userId The user ID.
  *  * @param {string} messageText The content of the message.
  * @param {object} antiSpamConfig The anti-spam configuration for the group.
+ * @param {boolean} isPremium Whether the group has premium status.
  * @returns { {type: string, reason: string} | null } A spam violation object or null.
  */
-export function checkSpam(chatId, userId, messageText, antiSpamConfig) {
+export function checkSpam(chatId, userId, messageText, antiSpamConfig, isPremium) {
     const now = Date.now();
     const user = userRecords[chatId]?.[userId];
 
@@ -84,28 +85,31 @@ export function checkSpam(chatId, userId, messageText, antiSpamConfig) {
         return { type: 'flood', reason: `More than ${floodConfig.count} messages in ${floodConfig.windowSec}s` };
     }
 
-    // 2. Repetition check
-    if (user.repeatCount >= 3) {
-        user.repeatCount = 0; // Reset after detection
-        return { type: 'repeat', reason: `Same message sent 3+ times` };
-    }
-
-    // 3. Caps abuse check (for messages longer than 20 chars)
-    if (messageText.length > 20) {
-        const caps = (messageText.match(/[A-Z]/g) || []).length;
-        const percentage = (caps / messageText.length) * 100;
-        if (percentage > 80) {
-            return { type: 'caps', reason: `Message contains >80% capital letters` };
+    // --- Premium Features ---
+    if (isPremium) {
+        // 2. Repetition check
+        if (user.repeatCount >= 3) {
+            user.repeatCount = 0; // Reset after detection
+            return { type: 'repeat', reason: `Same message sent 3+ times` };
         }
-    }
 
-    // 4. Link spam check
-    const hasUrl = /https?:\/\/[^\s]+/.test(messageText);
-    if (hasUrl) {
-        const whitelist = antiSpamConfig.linkWhitelist || [];
-        const isWhitelisted = whitelist.some(domain => messageText.includes(domain));
-        if (!isWhitelisted) {
-            return { type: 'link', reason: `Message contains a non-whitelisted link` };
+        // 3. Caps abuse check (for messages longer than 20 chars)
+        if (messageText.length > 20) {
+            const caps = (messageText.match(/[A-Z]/g) || []).length;
+            const percentage = (caps / messageText.length) * 100;
+            if (percentage > 80) {
+                return { type: 'caps', reason: `Message contains >80% capital letters` };
+            }
+        }
+
+        // 4. Link spam check
+        const hasUrl = /https?:\/\/[^\s]+/.test(messageText);
+        if (hasUrl) {
+            const whitelist = antiSpamConfig.linkWhitelist || [];
+            const isWhitelisted = whitelist.some(domain => messageText.includes(domain));
+            if (!isWhitelisted) {
+                return { type: 'link', reason: `Message contains a non-whitelisted link` };
+            }
         }
     }
 

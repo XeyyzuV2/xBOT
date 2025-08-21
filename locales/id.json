@@ -40,6 +40,16 @@
       "set_success": "✅ Channel log telah diatur ke {channelId}.",
       "set_fail": "Gagal mengatur channel log. Pastikan saya telah ditambahkan ke channel tersebut dan memiliki izin untuk mengirim pesan. Error: {error}"
   },
+  "premium": {
+      "owner_only": "Perintah ini hanya untuk Owner Bot.",
+      "enable_usage": "Penggunaan: /premium enable <jumlah_hari>",
+      "enable_success": "✅ Premium telah diaktifkan untuk grup ini selama {days} hari, berakhir pada {expiryDate}.",
+      "disabled_success": "❌ Premium telah dinonaktifkan untuk grup ini.",
+      "status_active": "✅ Grup ini adalah akun Premium.\nBerakhir pada: {expiryDate}",
+      "status_inactive": "❌ Grup ini bukan akun Premium.",
+      "unknown_command": "Perintah tidak dikenal. Gunakan: /premium <status|enable|disable>",
+      "feature_locked": "Fitur ini hanya tersedia untuk grup Premium."
+  },
   "antispam": {
     "enabled": "✅ Anti-Spam telah diaktifkan.",
     "disabled": "❌ Anti-Spam telah dinonaktifkan.",

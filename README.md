@@ -146,6 +146,8 @@ These commands can only be used by the bot owner defined in `config.js`.
 | `/restart` | Restarts the bot process. |
 | `/broadcast <text>` | Sends a message to all chats (with confirmation step). |
 | `/stats` | Shows bot statistics (uptime, memory, etc.). |
+| `/premium enable <days>` | Enables premium features for a group. |
+| `/premium disable` | Disables premium features for a group. |
 
 ## 👮 Admin Commands
 
@@ -154,6 +156,7 @@ These commands can be used by group administrators. Most commands require you to
 | Command | Description |
 |---------|-------------|
 | `/menu` or `/settings` | Opens the new interactive settings menu. |
+| `/premium status` | Checks the group's premium status. |
 | `/ban` or `/kick` | Bans a user from the group. |
 | `/mute` | Mutes a user, preventing them from sending messages. |
 | `/unmute` | Unmutes a previously muted user. |
@@ -170,8 +173,8 @@ These commands can be used by group administrators. Most commands require you to
 ### Welcome & Verify Commands
 - `/welcome on|off`: Enables or disables the welcome message system.
 - `/welcome set <message>`: Sets the custom welcome message. Use placeholders like `{first_name}`, `{mention}`, `{group_name}`.
-- `/verify on|off`: Enables or disables new member verification.
-- `/verify action <mute|kick>`: Sets the action taken when a user fails verification.
+- `/verify on|off`: Enables or disables new member verification. *(Premium)*
+- `/verify action <mute|kick>`: Sets the action taken when a user fails verification. *(Premium)*
 
 ### Logging Commands
 - `/setlog <channel_id>`: Sets a channel to receive moderation logs.
