@@ -18,6 +18,9 @@ import fs from 'fs/promises'
 import chalk from 'chalk'
 import config from './config.js'
 import * as utils from './utils.js'
+import { getGroupConfig } from './config-manager.js'
+import { recordMessage, checkSpam } from './spam-tracker.js'
+import { handleNewMember, handleVerification } from './plugins/welcome.js'
 
 const gradient = (text, colors) => {
   const lines = text.split('\n')
@@ -74,7 +77,61 @@ async function loadPlugins() {
   }
 }
 
+/**
+ * Handles incoming messages for spam violations.
+ * @param {object} conn The bot instance.
+ * @param {object} msg The message object.
+ * @returns {Promise<boolean>} True if a spam action was taken, false otherwise.
+ */
+async function handleAntiSpam(conn, msg) {
+  const { chat, from, text } = msg;
+  if (!chat || !from || !text || chat.type === 'private') {
+    return false; // Don't process private chats or messages without text
+  }
+
+  const config = await getGroupConfig(chat.id);
+  if (!config.antiSpam.enabled) {
+    return false;
+  }
+
+  // Don't check admins or owner for spam
+  if (utils.isOwner(from.id) || await utils.isGroupAdmin(conn, chat.id, from.id)) {
+      return false;
+  }
+
+  recordMessage(chat.id, from.id, text);
+  const violation = checkSpam(chat.id, from.id, text, config.antiSpam);
+
+  if (violation) {
+    const newWarningCount = utils.recordWarning(chat.id, from.id);
+    const userMention = `<a href="tg://user?id=${from.id}">${from.first_name}</a>`;
+
+    if (newWarningCount >= 3) {
+      // 3rd strike: Kick
+      await conn.banChatMember(chat.id, from.id);
+      await conn.sendMessage(chat.id, `${userMention} telah di-kick karena spam berulang (${violation.type}).`, { parse_mode: 'HTML' });
+    } else if (newWarningCount === 2) {
+      // 2nd strike: Temp-mute for 10 minutes
+      const muteUntil = Math.floor(Date.now() / 1000) + (10 * 60); // 10 minutes from now
+      await conn.restrictChatMember(chat.id, from.id, { until_date: muteUntil, can_send_messages: false });
+      await conn.sendMessage(chat.id, `${userMention} telah di-mute selama 10 menit karena spam (${violation.type}).`, { parse_mode: 'HTML' });
+    } else {
+      // 1st strike: Warn
+      await conn.sendMessage(chat.id, `Peringatan untuk ${userMention}: Harap tidak melakukan spam (${violation.type}).`, { parse_mode: 'HTML' });
+    }
+    return true; // Spam action was taken
+  }
+
+  return false; // No spam
+}
+
+
 bot.on('message', async (msg) => {
+  // Anti-spam check
+  if (await handleAntiSpam(bot, msg)) {
+    return; // Stop processing if spam was handled
+  }
+
   const from = msg.from
   const chat = msg.chat
   const text = msg.text || ''
@@ -99,6 +156,10 @@ bot.on('message', async (msg) => {
 })
 
 bot.on('callback_query', async (cb) => {
+  if (cb.data && cb.data.startsWith('verify_human_')) {
+    return handleVerification(bot, cb);
+  }
+
   const m = { callback_query: cb }
   for (const [, handler] of plugins.entries()) {
     if (typeof handler.before === 'function') {
@@ -124,5 +185,9 @@ chokidar.watch([pluginsDir, path.join(process.cwd(), 'config.js'), path.join(pro
     process.exit(0)
   }
 })
+
+bot.on('new_chat_members', (msg) => {
+    handleNewMember(bot, msg);
+});
 
 loadPlugins()

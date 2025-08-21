@@ -14,5 +14,40 @@
     "reply_to_message_to_pin": "Balas pesan yang ingin Anda sematkan (pin).",
     "reply_to_message_to_delete": "Balas pesan yang ingin Anda hapus."
   },
-  "language_changed": "✅ Bahasa untuk grup ini telah diubah ke Bahasa Indonesia."
+  "language_changed": "✅ Bahasa untuk grup ini telah diubah ke Bahasa Indonesia.",
+  "welcome": {
+    "enabled": "✅ Sistem Welcome telah diaktifkan.",
+    "disabled": "❌ Sistem Welcome telah dinonaktifkan.",
+    "set_usage": "Penggunaan: /welcome set <teks pesan>\nPlaceholder: {first_name}, {mention}, {group_name}",
+    "set_success": "✅ Pesan welcome telah diatur ke:\n{text}",
+    "status_header": "⚙️ Pengaturan Welcome",
+    "status_message": "Pesan: {message}"
+  },
+  "verify": {
+    "enabled": "✅ Verifikasi anggota baru telah diaktifkan.",
+    "disabled": "❌ Verifikasi anggota baru telah dinonaktifkan.",
+    "action_usage": "Penggunaan: /verify action <mute|kick>",
+    "action_success": "✅ Aksi verifikasi gagal diatur ke: {action}.",
+    "status_header": "⚙️ Pengaturan Verifikasi",
+    "status_action": "Aksi Gagal: {action}"
+  },
+  "antispam": {
+    "enabled": "✅ Anti-Spam telah diaktifkan.",
+    "disabled": "❌ Anti-Spam telah dinonaktifkan.",
+    "set_flood_usage": "Penggunaan salah. Contoh: /antispam set flood 10 5 (10 pesan dalam 5 detik)",
+    "set_flood_success": "✅ Aturan flood diatur ke {count} pesan / {windowSec} detik.",
+    "set_unknown": "Pengaturan tidak diketahui. Gunakan: /antispam set flood <count> <window>",
+    "whitelist_add_usage": "Penggunaan: /antispam whitelist add <domain.com>",
+    "whitelist_add_success": "✅ Domain {domain} telah ditambahkan ke whitelist.",
+    "whitelist_remove_usage": "Penggunaan: /antispam whitelist remove <domain.com>",
+    "whitelist_remove_success": "✅ Domain {domain} telah dihapus dari whitelist.",
+    "whitelist_list_empty": "Whitelist kosong.",
+    "whitelist_list_header": "📜 Daftar Domain Whitelist:",
+    "whitelist_usage": "Penggunaan: /antispam whitelist <add|remove|list> [domain]",
+    "status_header": "⚙️ Pengaturan Anti-Spam",
+    "status_current": "Status: {status}",
+    "status_flood_rule": "Aturan Flood: {rule}",
+    "status_whitelist_count": "Domain Whitelist: {count}",
+    "status_usage": "Gunakan sub-perintah:\non, off, set flood, whitelist"
+  }
 }
