@@ -1,4 +1,5 @@
 import { getGroupConfig } from './config-manager.js';
+import { getIcon } from './theme-manager.js';
 import fs from 'fs/promises';
 import path from 'path';
 import moment from 'moment-timezone';
@@ -53,34 +54,35 @@ export async function logEvent(conn, chatId, eventType, data) {
     const ts = moment().tz('Asia/Jakarta').format('HH:mm:ss');
     const admin = data.admin ? formatUser(data.admin) : 'System';
     const user = data.user ? formatUser(data.user) : 'N/A';
+    const theme = config.theme || 'classic';
     let logMessage = '';
 
     switch (eventType) {
         case 'ban':
-        case 'kick': // Treat kick as ban for logging
-            logMessage = `⚔️ KICK | ${user} oleh ${admin} • ${ts}`;
+        case 'kick':
+            logMessage = `${getIcon(theme, 'kick')} KICK | ${user} oleh ${admin} • ${ts}`;
             break;
 
         case 'mute':
             const duration = data.duration || '';
-            logMessage = `⏱ MUTE ${duration} | ${user} oleh ${admin} • ${ts}`;
+            logMessage = `${getIcon(theme, 'mute')} MUTE ${duration} | ${user} oleh ${admin} • ${ts}`;
             break;
 
         case 'unmute':
-            logMessage = `🔓 UNMUTE | ${user} oleh ${admin} • ${ts}`;
+            logMessage = `${getIcon(theme, 'unmute')} UNMUTE | ${user} oleh ${admin} • ${ts}`;
             break;
 
         case 'spam_detected':
             const excerpt = data.message_text ? `'${data.message_text.substring(0, 20)}...'` : '';
-            logMessage = `🛡 SPAM[${data.reason}] → ${data.action.toUpperCase()} | ${user} • ${excerpt} • ${ts}`;
+            logMessage = `${getIcon(theme, 'spam')} SPAM[${data.reason}] → ${data.action.toUpperCase()} | ${user} • ${excerpt} • ${ts}`;
             break;
 
         case 'verification_failed':
-            logMessage = `❌ VERIFY FAIL | ${user} • timeout • ${ts}`;
+            logMessage = `${getIcon(theme, 'verify_fail')} VERIFY FAIL | ${user} • timeout • ${ts}`;
             break;
 
         case 'test':
-            logMessage = `✅ LOG TEST | Log dari grup ${data.chat.title} berfungsi • ${ts}`;
+            logMessage = `${getIcon(theme, 'log_test')} LOG TEST | Log dari grup ${data.chat.title} berfungsi • ${ts}`;
             break;
 
         default:

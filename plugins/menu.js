@@ -1,21 +1,24 @@
 import { getGroupConfig, setGroupConfig } from '../config-manager.js';
 import { requireAdmin, isGroupAdmin } from '../utils.js';
 import { t } from '../i18n.js';
+import { getIcon } from '../theme-manager.js';
 
 // --- Menu Generation Functions ---
 
 async function generateMainMenu(chatId) {
+    const config = await getGroupConfig(chatId);
+    const theme = config.theme;
     const text = await t(chatId, 'menu.main_text');
     const keyboard = [
         [
-            { text: await t(chatId, 'menu.main_btn_antispam'), callback_data: 'menu:page:antispam' },
-            { text: await t(chatId, 'menu.main_btn_welcome'), callback_data: 'menu:page:welcome' }
+            { text: `${getIcon(theme, 'antispam')} ${await t(chatId, 'menu.main_btn_antispam')}`, callback_data: 'menu:page:antispam' },
+            { text: `${getIcon(theme, 'welcome')} ${await t(chatId, 'menu.main_btn_welcome')}`, callback_data: 'menu:page:welcome' }
         ],
         [
-            { text: await t(chatId, 'menu.main_btn_log'), callback_data: 'menu:page:log' },
-            { text: await t(chatId, 'menu.main_btn_lang'), callback_data: 'menu:page:lang' }
+            { text: `${getIcon(theme, 'log')} ${await t(chatId, 'menu.main_btn_log')}`, callback_data: 'menu:page:log' },
+            { text: `${getIcon(theme, 'lang')} ${await t(chatId, 'menu.main_btn_lang')}`, callback_data: 'menu:page:lang' }
         ],
-        [{ text: await t(chatId, 'menu.main_btn_close'), callback_data: 'menu:action:close' }]
+        [{ text: `${getIcon(theme, 'close')} ${await t(chatId, 'menu.main_btn_close')}`, callback_data: 'menu:action:close' }]
     ];
     return { text, keyboard };
 }

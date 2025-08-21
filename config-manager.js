@@ -4,6 +4,7 @@ import path from 'path';
 const configDir = path.join(process.cwd(), 'data', 'groups');
 const defaultConfig = {
   lang: 'id',
+  theme: 'classic',
   premiumUntil: null,
   welcome: {
     enabled: false,

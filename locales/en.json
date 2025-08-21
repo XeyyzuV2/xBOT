@@ -69,6 +69,12 @@
       "unknown_command": "Unknown command. Use: /premium <status|enable|disable>",
       "feature_locked": "This feature is only available for Premium groups."
   },
+  "theme": {
+    "invalid": "Invalid theme. Available themes: {themes}",
+    "set_success": "✅ Theme has been changed to: {theme}",
+    "list_header": "🎨 *Select a Theme*\n\nAvailable themes:",
+    "list_usage": "\n\nUse \`/theme set <theme_name>\` to change."
+  },
   "antispam": {
     "enabled": "✅ Anti-Spam has been enabled.",
     "disabled": "❌ Anti-Spam has been disabled.",
