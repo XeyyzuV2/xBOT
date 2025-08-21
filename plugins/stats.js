@@ -1,66 +1,42 @@
-import { isOwner } from '../utils.js';
+import { isOwner, formatBytes, formatUptime } from '../utils.js';
+import { getStatsFromLogs } from '../log-parser.js';
+import { countActivePremium } from '../config-manager.js';
 import os from 'os';
-
-/**
- * Formats bytes into a human-readable string.
- * @param {number} bytes The number of bytes.
- * @returns {string} The formatted string.
- */
-function formatBytes(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-/**
- * Formats seconds into a human-readable uptime string.
- * @param {number} seconds The total seconds.
- * @returns {string} The formatted uptime string.
- */
-function formatUptime(seconds) {
-    function pad(s) {
-        return (s < 10 ? '0' : '') + s;
-    }
-    const days = Math.floor(seconds / (24 * 3600));
-    seconds %= (24 * 3600);
-    const hours = Math.floor(seconds / 3600);
-    seconds %= 3600;
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-
-    return `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(secs)}s`;
-}
+import moment from 'moment-timezone';
 
 const handler = async ({ conn, m }) => {
   if (!isOwner(m.from.id)) {
-    // Silently ignore if not owner
-    return;
+    return; // Silently ignore if not owner
   }
 
   try {
+    const [logStats, premiumCount] = await Promise.all([
+        getStatsFromLogs(),
+        countActivePremium()
+    ]);
+
     const uptime = process.uptime();
     const memoryUsage = process.memoryUsage();
     const totalGroups = global.chatIds ? global.chatIds.size : 0;
+    const cpuUsage = os.loadavg()[0]; // 1-minute load average as a proxy for CPU usage
+    const date = moment().tz('Asia/Jakarta').format('DD MMM YYYY, HH:mm:ss');
 
-    const statsMessage = `
-📊 *Bot Statistics* 📊
+    const topRules = Object.entries(logStats.topRules)
+        .sort(([, a], [, b]) => b - a)
+        .map(([key, value]) => `${key}(${value})`)
+        .join(', ');
 
-*System:*
-- *OS:* ${os.type()} ${os.release()}
-- *CPU Arch:* ${os.arch()}
-- *Uptime:* ${formatUptime(uptime)}
-
-*Memory:*
-- *RSS:* ${formatBytes(memoryUsage.rss)}
-- *Heap Total:* ${formatBytes(memoryUsage.heapTotal)}
-- *Heap Used:* ${formatBytes(memoryUsage.heapUsed)}
-
-*Bot:*
-- *Total Chats:* ${totalGroups}
-- *Node.js Version:* ${process.version}
-    `;
+    const statsMessage = "```\n" +
+      `📊 xBOT Status — ${date}\n` +
+      `─────────────────────────\n` +
+      `Groups     : ${totalGroups}\n` +
+      `Users*     : N/A\n` +
+      `Incidents  : ${logStats.incidents24h} (24h)\n` +
+      `Premium    : ${premiumCount}\n` +
+      `Uptime     : ${formatUptime(uptime)}\n` +
+      `CPU/RAM    : ${cpuUsage.toFixed(2)}% / ${formatBytes(memoryUsage.rss)}\n` +
+      `Top Rules  : ${topRules || 'N/A'}` +
+      "\n```";
 
     await conn.sendMessage(m.chat.id, statsMessage, {
         parse_mode: 'Markdown',

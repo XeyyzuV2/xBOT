@@ -144,8 +144,8 @@ These commands can only be used by the bot owner defined in `config.js`.
 | Command | Description |
 |---------|-------------|
 | `/restart` | Restarts the bot process. |
-| `/broadcast <text>` | Sends a message to all chats (with confirmation step). |
-| `/stats` | Shows bot statistics (uptime, memory, etc.). |
+| `/broadcast <text>` | Sends a message to all chats safely (with confirmation & batching). |
+| `/stats` | Shows a detailed bot statistics card. |
 | `/premium enable <days>` | Enables premium features for a group. |
 | `/premium disable` | Disables premium features for a group. |
 

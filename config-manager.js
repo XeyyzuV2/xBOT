@@ -76,3 +76,33 @@ export async function setGroupConfig(chatId, newConfig) {
     return false;
   }
 }
+
+/**
+ * Scans all group configs and counts the number of active premium groups.
+ * @returns {Promise<number>} The number of active premium groups.
+ */
+export async function countActivePremium() {
+    let count = 0;
+    try {
+        const files = await fs.readdir(configDir);
+        for (const file of files) {
+            if (file.endsWith('.json')) {
+                const filePath = path.join(configDir, file);
+                try {
+                    const data = await fs.readFile(filePath, 'utf-8');
+                    const config = JSON.parse(data);
+                    if (config.premiumUntil && config.premiumUntil > Date.now()) {
+                        count++;
+                    }
+                } catch (e) {
+                    // Ignore errors for individual file reads
+                }
+            }
+        }
+    } catch (error) {
+        if (error.code !== 'ENOENT') {
+            console.error('Error reading config directory:', error);
+        }
+    }
+    return count;
+}

@@ -136,6 +136,38 @@ export async function requireAdmin(conn, m) {
 }
 
 /**
+ * Formats bytes into a human-readable string (e.g., 1024 -> "1 KB").
+ * @param {number} bytes The number of bytes.
+ * @returns {string} The formatted string.
+ */
+export function formatBytes(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+/**
+ * Formats seconds into a human-readable uptime string (e.g., "1d 02h 30m 05s").
+ * @param {number} seconds The total seconds.
+ * @returns {string} The formatted uptime string.
+ */
+export function formatUptime(seconds) {
+    function pad(s) {
+        return (s < 10 ? '0' : '') + s;
+    }
+    const days = Math.floor(seconds / (24 * 3600));
+    seconds %= (24 * 3600);
+    const hours = Math.floor(seconds / 3600);
+    seconds %= 3600;
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+
+    return `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(secs)}s`;
+}
+
+/**
  * A guard function that checks if the group has an active premium status.
  * If not, it replies with an error message and returns false.
  * @param {object} conn - The Telegram bot instance.

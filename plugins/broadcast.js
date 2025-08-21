@@ -72,30 +72,41 @@ export async function handleBroadcastCallback(conn, cb) {
     }
 
     if (action === 'send') {
+        delete pendingBroadcasts[messageId]; // Prevent re-sending
         const chatIds = Array.from(global.chatIds || []);
+        const total = chatIds.length;
         let successCount = 0;
         let failureCount = 0;
+        const startTime = Date.now();
 
-        await conn.editMessageText(`📢 Mengirim broadcast ke ${chatIds.length} chat...`, {
+        await conn.editMessageText(`📢 Mengirim broadcast ke ${total} chat... Ini mungkin memakan waktu.`, {
             chat_id: cb.message.chat.id,
             message_id: cb.message.message_id
         });
 
-        for (const chatId of chatIds) {
-            try {
-                await conn.sendMessage(chatId, originalMessageContent);
-                successCount++;
-                await delay(300);
-            } catch (err) {
-                console.error(`Gagal mengirim broadcast ke chat ${chatId}:`, err.message);
-                failureCount++;
+        const batchSize = 20;
+        const delayBetweenBatches = 1000; // 1 second
+
+        for (let i = 0; i < total; i += batchSize) {
+            const batch = chatIds.slice(i, i + batchSize);
+            const promises = batch.map(chatId =>
+                conn.sendMessage(chatId, originalMessageContent)
+                    .then(() => successCount++)
+                    .catch(err => {
+                        console.error(`Gagal mengirim broadcast ke chat ${chatId}:`, err.message);
+                        failureCount++;
+                    })
+            );
+            await Promise.all(promises);
+            if (i + batchSize < total) {
+                await delay(delayBetweenBatches);
             }
         }
 
-        const reportMessage = `✅ Broadcast selesai.\n\nBerhasil terkirim: ${successCount}\nGagal terkirim: ${failureCount}`;
+        const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+        const reportMessage = `✅ Broadcast selesai.\n\nBerhasil: ${successCount}/${total}\nGagal: ${failureCount}\nWaktu: ${duration} detik`;
         await conn.sendMessage(cb.message.chat.id, reportMessage);
 
-        delete pendingBroadcasts[messageId];
         return conn.answerCallbackQuery(cb.id);
     }
 }
