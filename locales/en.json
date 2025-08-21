@@ -40,6 +40,16 @@
       "set_success": "✅ Log channel has been set to {channelId}.",
       "set_fail": "Failed to set log channel. Make sure I have been added to that channel and have permission to send messages. Error: {error}"
   },
+  "premium": {
+      "owner_only": "This command is for the Bot Owner only.",
+      "enable_usage": "Usage: /premium enable <number_of_days>",
+      "enable_success": "✅ Premium has been enabled for this group for {days} days, expiring on {expiryDate}.",
+      "disabled_success": "❌ Premium has been disabled for this group.",
+      "status_active": "✅ This group is a Premium account.\nExpires on: {expiryDate}",
+      "status_inactive": "❌ This group is not a Premium account.",
+      "unknown_command": "Unknown command. Use: /premium <status|enable|disable>",
+      "feature_locked": "This feature is only available for Premium groups."
+  },
   "antispam": {
     "enabled": "✅ Anti-Spam has been enabled.",
     "disabled": "❌ Anti-Spam has been disabled.",

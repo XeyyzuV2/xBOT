@@ -36,7 +36,9 @@ export async function handleNewMember(conn, msg) {
         .replace(/{mention}/g, placeholders.mention)
         .replace(/{group_name}/g, placeholders.group_name);
 
-    if (config.verify.enabled) {
+    const isPremium = config.premiumUntil && config.premiumUntil > Date.now();
+
+    if (config.verify.enabled && isPremium) {
         // Restrict user first
         try {
             await conn.restrictChatMember(chatId, member.id, {

@@ -136,6 +136,25 @@ export async function requireAdmin(conn, m) {
 }
 
 /**
+ * A guard function that checks if the group has an active premium status.
+ * If not, it replies with an error message and returns false.
+ * @param {object} conn - The Telegram bot instance.
+ * @param {object} m - The message object.
+ * @returns {Promise<boolean>} True if the group is premium, false otherwise.
+ */
+export async function requirePremium(conn, m) {
+    const chatId = m.chat.id;
+    const config = await getGroupConfig(chatId);
+
+    if (!config.premiumUntil || config.premiumUntil <= Date.now()) {
+        const message = await t(chatId, 'premium.feature_locked');
+        await conn.sendMessage(chatId, message, { reply_to_message_id: m.message_id });
+        return false;
+    }
+    return true;
+}
+
+/**
  * A guard function that checks if the bot has the required permissions in a group.
  * If not, it replies with an error message and returns false.
  * @param {object} conn - The Telegram bot instance.

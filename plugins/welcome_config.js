@@ -1,4 +1,4 @@
-import { requireAdmin } from '../utils.js';
+import { requireAdmin, requirePremium } from '../utils.js';
 import { getGroupConfig, setGroupConfig } from '../config-manager.js';
 import { t } from '../i18n.js';
 
@@ -44,6 +44,7 @@ const handler = async ({ conn, m, text, command }) => {
         break;
     }
   } else if (command === 'verify') {
+    if (!await requirePremium(conn, m)) return;
     switch (action) {
       case 'on':
         config.verify.enabled = true;
