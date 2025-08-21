@@ -1,24 +1,48 @@
 import { getGroupConfig } from './config-manager.js';
-import { t } from './i18n.js';
+import fs from 'fs/promises';
+import path from 'path';
+import moment from 'moment-timezone';
+
+const incidentsLogPath = path.join(process.cwd(), 'data', 'incidents.log');
 
 /**
- * Formats a user object into a mention string.
+ * Formats a user object into an HTML mention string.
  * @param {object} user The user object {id, first_name}.
  * @returns {string} An HTML-formatted mention string.
  */
 function formatUser(user) {
     if (!user || !user.id || !user.first_name) return 'N/A';
-    return `<a href="tg://user?id=${user.id}">${user.first_name}</a>`;
+    // Basic escaping for user names to prevent HTML injection
+    const name = user.first_name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `<a href="tg://user?id=${user.id}">${name}</a>`;
+}
+
+/**
+ * Saves a summary of an incident to a local log file.
+ * @param {object} incidentData The structured data of the incident.
+ */
+async function saveIncident(incidentData) {
+    try {
+        const logLine = JSON.stringify(incidentData) + '\n';
+        await fs.appendFile(incidentsLogPath, logLine);
+    } catch (error) {
+        console.error('Failed to save incident to log file:', error);
+    }
 }
 
 /**
  * Logs an event to the configured log channel for a specific group.
  * @param {object} conn The bot instance.
  * @param {string|number} chatId The ID of the group where the event occurred.
- * @param {string} eventType The type of event (e.g., 'ban', 'mute', 'spam_flood').
+ * @param {string} eventType The type of event (e.g., 'ban', 'mute', 'spam_detected').
  * @param {object} data The data associated with the event.
  */
 export async function logEvent(conn, chatId, eventType, data) {
+    // First, save the incident to local storage
+    const incident = { type: eventType, user: data.user, admin: data.admin, meta: data, timestamp: new Date().toISOString() };
+    await saveIncident(incident);
+
+    // Then, send the rich log to the channel if configured
     const config = await getGroupConfig(chatId);
     const logChannelId = config.log.channelId;
 
@@ -26,57 +50,48 @@ export async function logEvent(conn, chatId, eventType, data) {
         return; // Logging is disabled for this group.
     }
 
-    let logMessage = `📝 <b>Log Event</b>\n`;
-    logMessage += `<b>Group:</b> ${data.chat.title || chatId}\n`;
-    logMessage += `<b>Timestamp:</b> ${new Date().toISOString()}\n\n`;
-
-    const admin = data.admin ? formatUser(data.admin) : 'N/A';
+    const ts = moment().tz('Asia/Jakarta').format('HH:mm:ss');
+    const admin = data.admin ? formatUser(data.admin) : 'System';
     const user = data.user ? formatUser(data.user) : 'N/A';
-    const reason = data.reason || 'No reason specified.';
+    let logMessage = '';
 
     switch (eventType) {
         case 'ban':
-            logMessage += `🚨 <b>User Banned</b>\n`;
-            logMessage += `<b>User:</b> ${user}\n`;
-            logMessage += `<b>Admin:</b> ${admin}`;
+        case 'kick': // Treat kick as ban for logging
+            logMessage = `⚔️ KICK | ${user} oleh ${admin} • ${ts}`;
             break;
 
         case 'mute':
-            logMessage += `🤫 <b>User Muted</b>\n`;
-            logMessage += `<b>User:</b> ${user}\n`;
-            logMessage += `<b>Admin:</b> ${admin}`;
+            const duration = data.duration || '';
+            logMessage = `⏱ MUTE ${duration} | ${user} oleh ${admin} • ${ts}`;
             break;
 
         case 'unmute':
-            logMessage += `🗣️ <b>User Unmuted</b>\n`;
-            logMessage += `<b>User:</b> ${user}\n`;
-            logMessage += `<b>Admin:</b> ${admin}`;
+            logMessage = `🔓 UNMUTE | ${user} oleh ${admin} • ${ts}`;
             break;
 
         case 'spam_detected':
-            logMessage += `🛡️ <b>Spam Detected</b>\n`;
-            logMessage += `<b>User:</b> ${user}\n`;
-            logMessage += `<b>Action:</b> ${data.action}\n`; // e.g., 'warn', 'mute', 'kick'
-            logMessage += `<b>Reason:</b> ${reason}`;
+            const excerpt = data.message_text ? `'${data.message_text.substring(0, 20)}...'` : '';
+            logMessage = `🛡 SPAM[${data.reason}] → ${data.action.toUpperCase()} | ${user} • ${excerpt} • ${ts}`;
             break;
 
         case 'verification_failed':
-            logMessage += `❓ <b>Verification Failed</b>\n`;
-            logMessage += `<b>User:</b> ${user}\n`;
-            logMessage += `<b>Action:</b> ${data.action}`;
+            logMessage = `❌ VERIFY FAIL | ${user} • timeout • ${ts}`;
+            break;
+
+        case 'test':
+            logMessage = `✅ LOG TEST | Log dari grup ${data.chat.title} berfungsi • ${ts}`;
             break;
 
         default:
-            logMessage += `ℹ️ <b>Event:</b> ${eventType}\n`;
-            logMessage += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-            break;
+            // For other events, we might not send a log or use a generic format.
+            // For now, we'll skip logging unknown event types to the channel.
+            return;
     }
 
     try {
         await conn.sendMessage(logChannelId, logMessage, { parse_mode: 'HTML' });
     } catch (error) {
         console.error(`Failed to send log to channel ${logChannelId}:`, error.message);
-        // Optional: Notify the group admin that logging is failing.
-        // This could be spammy, so we'll just log it to the console for now.
     }
 }
