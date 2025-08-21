@@ -69,6 +69,12 @@
       "unknown_command": "Perintah tidak dikenal. Gunakan: /premium <status|enable|disable>",
       "feature_locked": "Fitur ini hanya tersedia untuk grup Premium."
   },
+  "theme": {
+    "invalid": "Tema tidak valid. Tema yang tersedia: {themes}",
+    "set_success": "✅ Tema telah diubah menjadi: {theme}",
+    "list_header": "🎨 *Pilih Tema*\n\nTema yang tersedia:",
+    "list_usage": "\n\nGunakan \`/theme set <nama_tema>\` untuk mengubah."
+  },
   "antispam": {
     "enabled": "✅ Anti-Spam telah diaktifkan.",
     "disabled": "❌ Anti-Spam telah dinonaktifkan.",

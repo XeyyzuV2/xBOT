@@ -182,6 +182,10 @@ These commands can be used by group administrators. Most commands require you to
 - `/log off`: Disables logging for the group.
 - `/log test`: Sends test messages to the configured log channel.
 
+### Customization Commands
+- `/theme`: Lists available themes.
+- `/theme set <name>`: Sets the theme for the bot's responses in the group.
+
 
 ## 🤝 Contributing
 
