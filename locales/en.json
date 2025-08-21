@@ -40,6 +40,25 @@
       "set_success": "✅ Log channel has been set to {channelId}.",
       "set_fail": "Failed to set log channel. Make sure I have been added to that channel and have permission to send messages. Error: {error}"
   },
+  "menu": {
+      "main_text": "⚙️ *Bot Settings Menu*\n\nPlease select a category to configure.",
+      "main_btn_antispam": "🛡 Anti-Spam",
+      "main_btn_welcome": "👋 Welcome",
+      "main_btn_log": "📜 Logging",
+      "main_btn_lang": "🌐 Language",
+      "main_btn_close": "❌ Close",
+      "back_btn": "Back",
+      "antispam_text": "🛡 *Anti-Spam Settings*\n\nCurrent status: {status}",
+      "antispam_btn_toggle": "Toggle Anti-Spam: {status}",
+      "welcome_text": "👋 *Welcome & Verify Settings*\n\nWelcome: {welcomeStatus}\nVerify: {verifyStatus}",
+      "welcome_btn_toggle_welcome": "Toggle Welcome: {status}",
+      "welcome_btn_toggle_verify": "Toggle Verify: {status}",
+      "log_text": "📜 *Logging Settings*\n\nCurrent status: {status}\n\nUse /setlog to change the channel.",
+      "lang_text": "🌐 *Language Settings*\n\nCurrent language: {lang}",
+      "lang_btn_id": "🇮🇩 Indonesia",
+      "lang_btn_en": "🇬🇧 English",
+      "admin_only_error": "You must be an admin to use this menu."
+  },
   "premium": {
       "owner_only": "This command is for the Bot Owner only.",
       "enable_usage": "Usage: /premium enable <number_of_days>",
