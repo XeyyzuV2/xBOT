@@ -178,8 +178,9 @@ These commands can be used by group administrators. Most commands require you to
 - `/verify action <mute|kick>`: Sets the action taken when a user fails verification. *(Premium)*
 
 ### Logging Commands
-- `/setlog <channel_id>`: Sets a channel to receive moderation logs.
-- `/setlog off`: Disables logging for the group.
+- `/setlog`: Starts a wizard to set the log channel by forwarding a message.
+- `/log off`: Disables logging for the group.
+- `/log test`: Sends test messages to the configured log channel.
 
 
 ## 🤝 Contributing

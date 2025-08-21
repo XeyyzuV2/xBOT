@@ -25,6 +25,7 @@ import { logEvent } from './logger.js'
 import { handleBroadcastCallback } from './plugins/broadcast.js';
 import { handleMenuCallback } from './plugins/menu.js';
 import { handleModerationCallback } from './plugins/ahelp.js';
+import { handleLogChannelSetup } from './plugins/log_config.js';
 import { init as initWrapper, conn as wrappedConn } from './telegram-wrapper.js';
 
 const gradient = (text, colors) => {
@@ -141,6 +142,11 @@ async function handleAntiSpam(conn, msg) {
 
 
 bot.on('message', async (msg) => {
+  // Handle log channel setup via message forwarding
+  if (await handleLogChannelSetup(wrappedConn, msg)) {
+    return; // Stop processing if it was a log setup message
+  }
+
   // Anti-spam check
   if (await handleAntiSpam(wrappedConn, msg)) {
     return; // Stop processing if spam was handled
