@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
+import config from './config.js';
 
 /**
  * Sends a media file to a Telegram chat. It automatically determines the type of media (photo, video, or document) based on the file extension.
@@ -60,5 +61,51 @@ export async function loading(m, conn, done = false) {
   } catch (err) {
     // Avoid crashing on minor UI errors, like trying to edit a deleted message
     console.error(chalk.red.bold('❌ loading() error:'), chalk.gray(err.message));
+  }
+}
+
+/**
+ * Checks if a user is an owner of the bot.
+ * @param {number} userId - The user's Telegram ID.
+ * @returns {boolean} True if the user is an owner.
+ */
+export function isOwner(userId) {
+  return config.owner.includes(userId);
+}
+
+/**
+ * Checks if a user is an admin or creator in a specific group chat.
+ * @param {object} conn - The Telegram bot instance.
+ * @param {string|number} chatId - The ID of the chat.
+ * @param {number} userId - The ID of the user to check.
+ * @returns {Promise<boolean>} True if the user is an admin or creator.
+ */
+export async function isGroupAdmin(conn, chatId, userId) {
+  try {
+    const member = await conn.getChatMember(chatId, userId);
+    return ['administrator', 'creator'].includes(member.status);
+  } catch (error) {
+    console.error(chalk.red.bold('❌ isGroupAdmin error:'), chalk.gray(error.message));
+    return false;
+  }
+}
+
+/**
+ * Checks if the bot itself is an admin in a specific group chat.
+ * @param {object} conn - The Telegram bot instance.
+ * @param {string|number} chatId - The ID of the chat.
+ * @returns {Promise<object|null>} The chat member object for the bot if it's an admin, otherwise null.
+ */
+export async function botIsAdmin(conn, chatId) {
+  try {
+    const botInfo = await conn.getMe();
+    const member = await conn.getChatMember(chatId, botInfo.id);
+    if (['administrator', 'creator'].includes(member.status)) {
+      return member; // Return the member object which includes permissions
+    }
+    return null;
+  } catch (error) {
+    console.error(chalk.red.bold('❌ botIsAdmin error:'), chalk.gray(error.message));
+    return null;
   }
 }
