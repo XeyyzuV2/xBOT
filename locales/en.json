@@ -31,6 +31,15 @@
     "status_header": "⚙️ Verification Settings",
     "status_action": "Failed Action: {action}"
   },
+  "log_config": {
+      "status_header": "Log Channel Status: {status}",
+      "usage": "Usage: /setlog <channel_id> or /setlog off",
+      "disabled": "✅ Logging has been disabled for this group.",
+      "invalid_id": "Invalid Channel ID. Please enter a correct channel ID (number).",
+      "test_message": "✅ This channel has been successfully set as the log channel for the group: {groupTitle}",
+      "set_success": "✅ Log channel has been set to {channelId}.",
+      "set_fail": "Failed to set log channel. Make sure I have been added to that channel and have permission to send messages. Error: {error}"
+  },
   "antispam": {
     "enabled": "✅ Anti-Spam has been enabled.",
     "disabled": "❌ Anti-Spam has been disabled.",

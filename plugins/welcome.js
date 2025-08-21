@@ -1,5 +1,6 @@
 import { getGroupConfig } from '../config-manager.js';
 import { t } from '../i18n.js';
+import { logEvent } from '../logger.js';
 
 // Store timeouts so we can clear them if a user verifies successfully.
 const verificationTimeouts = {}; // { `chatId_userId`: timeoutId }
@@ -62,21 +63,25 @@ export async function handleNewMember(conn, msg) {
                 // Check if user is still restricted (i.e., hasn't verified)
                 const currentMember = await conn.getChatMember(chatId, member.id);
                 if (!currentMember.can_send_messages) {
-                    if (config.verify.action === 'kick') {
+                    const action = config.verify.action;
+                    if (action === 'kick') {
                         await conn.banChatMember(chatId, member.id);
-                        // Also unban immediately so they can rejoin if they want
-                        await conn.unbanChatMember(chatId, member.id);
+                        await conn.unbanChatMember(chatId, member.id); // So they can rejoin
                         await conn.editMessageText(`Maaf ${placeholders.first_name}, waktu verifikasi habis. Anda telah dikeluarkan.`, {
                             chat_id: chatId,
                             message_id: sentMessage.message_id,
                         });
-                    } else { // 'mute' is the default
-                        // The user is already muted, so we just update the message.
+                    } else { // 'mute'
                         await conn.editMessageText(`Maaf ${placeholders.first_name}, waktu verifikasi habis. Anda tetap di-mute. Hubungi admin untuk di-unmute.`, {
                             chat_id: chatId,
                             message_id: sentMessage.message_id,
                         });
                     }
+                    await logEvent(conn, chatId, 'verification_failed', {
+                        chat: msg.chat,
+                        user: member,
+                        action: action,
+                    });
                 }
                 delete verificationTimeouts[timeoutKey];
             }, 60 * 1000); // 60 seconds

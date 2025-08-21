@@ -1,221 +1,161 @@
-import fs from 'fs/promises'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import moment from 'moment-timezone'
-import { isOwner } from '../utils.js';
+import { getGroupConfig, setGroupConfig } from '../config-manager.js';
+import { requireAdmin, isOwner } from '../utils.js';
+import { t } from '../i18n.js';
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const pluginsDir = path.join(__dirname)
+// --- Menu Generation Functions ---
 
-const COMMANDS_PER_PAGE = 10
-const MAX_MESSAGE_LENGTH = 3500
-
-let handler = async ({ conn, m }) => {
-  const name = m.from?.first_name || 'Pengguna'
-  const userId = m.from?.id
-  const userIsOwner = isOwner(userId)
-  const role = userIsOwner ? 'Owner' : 'User'
-  const waktu = moment().tz('Asia/Jakarta').format('dddd, DD MMMM YYYY HH:mm:ss')
-  
-  const args = m.text?.split(' ') || []
-  const currentPage = parseInt(args[1]) || 1
-  
-  const groups = await loadCommands()
-  if (!groups) {
-    return conn.sendMessage(m.chat.id, 'Gagal membaca daftar plugin.', {
-      reply_to_message_id: m.message_id
-    })
-  }
-  
-  const allCommands = []
-  for (const [tag, commands] of Object.entries(groups)) {
-    allCommands.push({
-      tag: tag.charAt(0).toUpperCase() + tag.slice(1),
-      commands: commands
-    })
-  }
-  
-  const totalPages = Math.ceil(allCommands.length / COMMANDS_PER_PAGE)
-  const startIndex = (currentPage - 1) * COMMANDS_PER_PAGE
-  const endIndex = startIndex + COMMANDS_PER_PAGE
-  const pageCommands = allCommands.slice(startIndex, endIndex)
-  
-  let message = `Halo, ${name}!\n`
-  message += `Waktu: ${waktu}\n`
-  message += `Role: ${role}\n`
-  message += `Halaman: ${currentPage}/${totalPages}\n\n`
-  message += `Daftar perintah bot:\n\n`
-  
-  for (const group of pageCommands) {
-    message += `${group.tag}\n`
-    message += `${group.commands.map(c => `- ${c}`).join('\n')}\n\n`
-  }
-  
-  message += `Bot aktif 24/7\n`
-  message += `Dibuat oleh XeyLabs`
-  
-  const buttons = createPaginationButtons(currentPage, totalPages)
-  
-  await conn.sendMessage(m.chat.id, message, {
-    parse_mode: 'Markdown',
-    reply_markup: buttons,
-    disable_web_page_preview: true
-  })
+async function generateMainMenu(chatId) {
+    const text = '⚙️ *Bot Settings Menu*\n\nPilih kategori untuk dikonfigurasi.';
+    const keyboard = [
+        [
+            { text: '🛡 Anti-Spam', callback_data: 'menu:antispam' },
+            { text: '👋 Welcome', callback_data: 'menu:welcome' }
+        ],
+        [
+            { text: '📜 Logging', callback_data: 'menu:log' },
+            { text: '🌐 Bahasa', callback_data: 'menu:lang' }
+        ],
+        [{ text: '❌ Tutup', callback_data: 'menu:close' }]
+    ];
+    return { text, keyboard };
 }
 
-async function loadCommands() {
-  const groups = {}
-  
-  try {
-    const files = await fs.readdir(pluginsDir)
+async function generateAntiSpamMenu(chatId) {
+    const config = await getGroupConfig(chatId);
+    const status = config.antiSpam.enabled ? '✅ ON' : '❌ OFF';
+    const text = `🛡 *Anti-Spam Settings*\n\nStatus saat ini: ${status}`;
+    const keyboard = [
+        [{ text: `Toggle Anti-Spam: ${status}`, callback_data: `toggle:antispam:${config.antiSpam.enabled ? 'off' : 'on'}` }],
+        [{ text: 'Kembali', callback_data: 'menu:main' }]
+    ];
+    return { text, keyboard };
+}
+
+async function generateWelcomeMenu(chatId) {
+    const config = await getGroupConfig(chatId);
+    const welcomeStatus = config.welcome.enabled ? '✅ ON' : '❌ OFF';
+    const verifyStatus = config.verify.enabled ? '✅ ON' : '❌ OFF';
+    const text = `👋 *Welcome & Verify Settings*\n\nWelcome: ${welcomeStatus}\nVerify: ${verifyStatus}`;
+    const keyboard = [
+        [{ text: `Toggle Welcome: ${welcomeStatus}`, callback_data: `toggle:welcome:${config.welcome.enabled ? 'off' : 'on'}` }],
+        [{ text: `Toggle Verify: ${verifyStatus}`, callback_data: `toggle:verify:${config.verify.enabled ? 'off' : 'on'}` }],
+        [{ text: 'Kembali', callback_data: 'menu:main' }]
+    ];
+    return { text, keyboard };
+}
+
+async function generateLogMenu(chatId) {
+    const config = await getGroupConfig(chatId);
+    const status = config.log.channelId ? `✅ ON (${config.log.channelId})` : '❌ OFF';
+    const text = `📜 *Logging Settings*\n\nStatus saat ini: ${status}\n\nGunakan /setlog untuk mengubah channel.`;
+    const keyboard = [
+        [{ text: 'Kembali', callback_data: 'menu:main' }]
+    ];
+    return { text, keyboard };
+}
+
+async function generateLangMenu(chatId) {
+    const config = await getGroupConfig(chatId);
+    const text = `🌐 *Language Settings*\n\nBahasa saat ini: ${config.lang.toUpperCase()}`;
+    const keyboard = [
+        [{ text: '🇮🇩 Indonesia', callback_data: 'toggle:lang:id' }, { text: '🇬🇧 English', callback_data: 'toggle:lang:en' }],
+        [{ text: 'Kembali', callback_data: 'menu:main' }]
+    ];
+    return { text, keyboard };
+}
+
+// --- Main Command Handler ---
+
+const handler = async ({ conn, m }) => {
+    if (!await requireAdmin(conn, m)) return;
+    const { text, keyboard } = await generateMainMenu(m.chat.id);
+    await conn.sendMessage(m.chat.id, text, {
+        parse_mode: 'Markdown',
+        reply_markup: { inline_keyboard: keyboard },
+        reply_to_message_id: m.message_id
+    });
+};
+
+// --- Callback Handler ---
+
+export async function handleMenuCallback(conn, cb) {
+    const { data, message } = cb;
+    const chatId = message.chat.id;
     
-    for (const file of files) {
-      if (!file.endsWith('.js')) continue
-      
-      const filePath = path.join(pluginsDir, file)
-      const modulePath = `file://${filePath}?v=${Date.now()}`
-      
-      try {
-        const plugin = (await import(modulePath)).default
-        if (!plugin?.command || !plugin?.tags) continue
-        
-        const commands = Array.isArray(plugin.command) 
-          ? plugin.command 
-          : [plugin.command]
-        const tags = Array.isArray(plugin.tags) 
-          ? plugin.tags 
-          : [plugin.tags]
-        
-        for (const tag of tags) {
-          if (!groups[tag]) groups[tag] = []
-          groups[tag].push(commands.map(cmd => `/${cmd}`).join(', '))
+    if (!await isGroupAdmin(conn, chatId, cb.from.id)) {
+        return conn.answerCallbackQuery(cb.id, { text: 'Anda harus menjadi admin untuk menggunakan menu ini.' });
+    }
+
+    const [type, key, value] = data.split(':');
+
+    if (type === 'menu') {
+        let menuData;
+        if (key === 'main') {
+            menuData = await generateMainMenu(chatId);
+        } else if (key === 'antispam') {
+            menuData = await generateAntiSpamMenu(chatId);
+        } else if (key === 'welcome') {
+            menuData = await generateWelcomeMenu(chatId);
+        } else if (key === 'log') {
+            menuData = await generateLogMenu(chatId);
+        } else if (key === 'lang') {
+            menuData = await generateLangMenu(chatId);
+        } else if (key === 'close') {
+            return await conn.deleteMessage(chatId, message.message_id);
         }
-      } catch (pluginErr) {
-        console.error(`Error loading plugin ${file}:`, pluginErr)
-        continue
-      }
+        
+        if (menuData) {
+            await conn.editMessageText(menuData.text, {
+                chat_id: chatId,
+                message_id: message.message_id,
+                parse_mode: 'Markdown',
+                reply_markup: { inline_keyboard: menuData.keyboard }
+            });
+        }
+    } else if (type === 'toggle') {
+        let config = await getGroupConfig(chatId);
+        const newState = value === 'on';
+        
+        if (key === 'antispam') {
+            config.antiSpam.enabled = newState;
+        } else if (key === 'welcome') {
+            config.welcome.enabled = newState;
+        } else if (key === 'verify') {
+            config.verify.enabled = newState;
+        }
+
+        await setGroupConfig(chatId, config);
+
+        // Regenerate the same menu to show the updated state
+        let updatedMenuData;
+        if (key === 'antispam') {
+            updatedMenuData = await generateAntiSpamMenu(chatId);
+        } else if (key === 'welcome' || key === 'verify') {
+            updatedMenuData = await generateWelcomeMenu(chatId);
+        } else if (key === 'lang') {
+            config.lang = value; // value is 'id' or 'en'
+            await setGroupConfig(chatId, config);
+            updatedMenuData = await generateLangMenu(chatId);
+        }
+
+        if (updatedMenuData) {
+            await conn.editMessageText(updatedMenuData.text, {
+                chat_id: chatId,
+                message_id: message.message_id,
+                parse_mode: 'Markdown',
+                reply_markup: { inline_keyboard: updatedMenuData.keyboard }
+            });
+        }
     }
     
-    return groups
-  } catch (err) {
-    console.error('Error reading plugins directory:', err)
-    return null
-  }
+    await conn.answerCallbackQuery(cb.id);
 }
 
-function createPaginationButtons(currentPage, totalPages) {
-  const keyboard = []
-  
-  const navRow = []
-  
-  if (currentPage > 1) {
-    navRow.push({
-      text: 'Sebelumnya',
-      callback_data: `menu_${currentPage - 1}`
-    })
-  }
-  
-  if (currentPage < totalPages) {
-    navRow.push({
-      text: 'Selanjutnya',
-      callback_data: `menu_${currentPage + 1}`
-    })
-  }
-  
-  if (navRow.length > 0) {
-    keyboard.push(navRow)
-  }
-  
-  if (totalPages > 3) {
-    const jumpRow = []
-    
-    if (currentPage > 2) {
-      jumpRow.push({
-        text: '1',
-        callback_data: 'menu_1'
-      })
-      
-      if (currentPage > 3) {
-        jumpRow.push({
-          text: '...',
-          callback_data: 'menu_noop'
-        })
-      }
-    }
-    
-    for (let i = Math.max(1, currentPage - 1); i <= Math.min(totalPages, currentPage + 1); i++) {
-      jumpRow.push({
-        text: i === currentPage ? `[${i}]` : `${i}`,
-        callback_data: `menu_${i}`
-      })
-    }
-    
-    if (currentPage < totalPages - 1) {
-      if (currentPage < totalPages - 2) {
-        jumpRow.push({
-          text: '...',
-          callback_data: 'menu_noop'
-        })
-      }
-      
-      jumpRow.push({
-        text: `${totalPages}`,
-        callback_data: `menu_${totalPages}`
-      })
-    }
-    
-    if (jumpRow.length > 0) {
-      keyboard.push(jumpRow)
-    }
-  }
-  
-  keyboard.push([
-    {
-      text: 'Website',
-      url: 'https://forum.html-5.me'
-    }
-  ])
-  
-  return {
-    inline_keyboard: keyboard
-  }
-}
 
-handler.callback = async ({ conn, callback_query }) => {
-  const data = callback_query.data
-  
-  if (!data.startsWith('menu_')) return
-  
-  const page = data.replace('menu_', '')
-  if (page === 'noop') {
-    return conn.answerCallbackQuery(callback_query.id, {
-      text: 'Navigasi cepat'
-    })
-  }
-  
-  const pageNum = parseInt(page)
-  if (isNaN(pageNum)) return
-  
-  const fakeMessage = {
-    from: callback_query.from,
-    chat: { id: callback_query.message.chat.id },
-    message_id: callback_query.message.message_id,
-    text: `/menu ${pageNum}`
-  }
-  
-  try {
-    await conn.deleteMessage(callback_query.message.chat.id, callback_query.message.message_id)
-  } catch (err) {
-    console.error('Error deleting message:', err)
-  }
-  
-  await handler({ conn, m: fakeMessage })
-  await conn.answerCallbackQuery(callback_query.id)
-}
+handler.command = ['menu', 'settings'];
+handler.help = ['menu'];
+handler.tags = ['main', 'admin'];
+handler.group = true;
+handler.private = false;
 
-handler.command = ['start', 'menu']
-handler.help = ['start', 'menu']
-handler.tags = ['main']
-
-export default handler
+export default handler;

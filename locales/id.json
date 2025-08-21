@@ -31,6 +31,15 @@
     "status_header": "⚙️ Pengaturan Verifikasi",
     "status_action": "Aksi Gagal: {action}"
   },
+  "log_config": {
+      "status_header": "Status Log Channel: {status}",
+      "usage": "Gunakan: /setlog <channel_id> atau /setlog off",
+      "disabled": "✅ Logging telah dinonaktifkan untuk grup ini.",
+      "invalid_id": "Channel ID tidak valid. Harap masukkan ID channel yang benar (angka).",
+      "test_message": "✅ Channel ini telah berhasil ditetapkan sebagai channel log untuk grup: {groupTitle}",
+      "set_success": "✅ Channel log telah diatur ke {channelId}.",
+      "set_fail": "Gagal mengatur channel log. Pastikan saya telah ditambahkan ke channel tersebut dan memiliki izin untuk mengirim pesan. Error: {error}"
+  },
   "antispam": {
     "enabled": "✅ Anti-Spam telah diaktifkan.",
     "disabled": "❌ Anti-Spam telah dinonaktifkan.",

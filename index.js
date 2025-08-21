@@ -21,6 +21,9 @@ import * as utils from './utils.js'
 import { getGroupConfig } from './config-manager.js'
 import { recordMessage, checkSpam } from './spam-tracker.js'
 import { handleNewMember, handleVerification } from './plugins/welcome.js'
+import { logEvent } from './logger.js'
+import { handleBroadcastCallback } from './plugins/broadcast.js';
+import { handleMenuCallback } from './plugins/menu.js';
 
 const gradient = (text, colors) => {
   const lines = text.split('\n')
@@ -106,19 +109,26 @@ async function handleAntiSpam(conn, msg) {
     const newWarningCount = utils.recordWarning(chat.id, from.id);
     const userMention = `<a href="tg://user?id=${from.id}">${from.first_name}</a>`;
 
+    let action = 'warn';
     if (newWarningCount >= 3) {
-      // 3rd strike: Kick
+      action = 'kick';
       await conn.banChatMember(chat.id, from.id);
       await conn.sendMessage(chat.id, `${userMention} telah di-kick karena spam berulang (${violation.type}).`, { parse_mode: 'HTML' });
     } else if (newWarningCount === 2) {
-      // 2nd strike: Temp-mute for 10 minutes
+      action = 'mute';
       const muteUntil = Math.floor(Date.now() / 1000) + (10 * 60); // 10 minutes from now
       await conn.restrictChatMember(chat.id, from.id, { until_date: muteUntil, can_send_messages: false });
       await conn.sendMessage(chat.id, `${userMention} telah di-mute selama 10 menit karena spam (${violation.type}).`, { parse_mode: 'HTML' });
     } else {
-      // 1st strike: Warn
+      action = 'warn';
       await conn.sendMessage(chat.id, `Peringatan untuk ${userMention}: Harap tidak melakukan spam (${violation.type}).`, { parse_mode: 'HTML' });
     }
+    await logEvent(conn, chat.id, 'spam_detected', {
+        chat: msg.chat,
+        user: from,
+        action: action,
+        reason: violation.type,
+    });
     return true; // Spam action was taken
   }
 
@@ -158,6 +168,12 @@ bot.on('message', async (msg) => {
 bot.on('callback_query', async (cb) => {
   if (cb.data && cb.data.startsWith('verify_human_')) {
     return handleVerification(bot, cb);
+  }
+  if (cb.data && cb.data.startsWith('broadcast:')) {
+    return handleBroadcastCallback(bot, cb);
+  }
+  if (cb.data && (cb.data.startsWith('menu:') || cb.data.startsWith('toggle:'))) {
+    return handleMenuCallback(bot, cb);
   }
 
   const m = { callback_query: cb }

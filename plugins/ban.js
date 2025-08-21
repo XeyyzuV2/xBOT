@@ -1,6 +1,6 @@
 import { isOwner, isGroupAdmin, requireAdmin, requireBotAdmin } from '../utils.js';
 import { t } from '../i18n.js';
-
+import { logEvent } from '../logger.js';
 const handler = async ({ conn, m }) => {
   if (!await requireAdmin(conn, m)) return;
   if (!await requireBotAdmin(conn, m, ['can_restrict_members'])) return;
@@ -32,8 +32,14 @@ const handler = async ({ conn, m }) => {
   // 6. Ban the user
   try {
     await conn.banChatMember(chatId, targetId);
-    conn.sendMessage(chatId, `✅ Pengguna ${targetUsername} telah berhasil diblokir dari grup.`, {
+    await conn.sendMessage(chatId, `✅ Pengguna ${targetUsername} telah berhasil diblokir dari grup.`, {
       reply_to_message_id: m.message_id
+    });
+    // Log the event
+    await logEvent(conn, chatId, 'ban', {
+        chat: m.chat,
+        admin: m.from,
+        user: m.reply_to_message.from,
     });
   } catch (err) {
     console.error('Ban error:', err);
