@@ -57,6 +57,40 @@ export default {
 npm start
 ```
 
+### 📲 Menjalankan di Termux
+
+1.  **Siapkan Termux**: Buka Termux dan perbarui paket-paketnya.
+    ```bash
+    pkg update && pkg upgrade -y
+    ```
+
+2.  **Install Dependencies**: Install semua paket yang dibutuhkan.
+    ```bash
+    pkg install nodejs git make python clang -y
+    ```
+
+3.  **Clone Repository**:
+    ```bash
+    git clone https://github.com/your-username/xBOT.git
+    cd xBOT
+    ```
+
+4.  **Install Modul Node.js**:
+    ```bash
+    npm install
+    ```
+
+5.  **Konfigurasi Bot**: Salin atau buat file `config.js` dan isi dengan token bot Anda.
+    ```bash
+    # Buka editor untuk mengedit konfigurasi
+    nano config.js
+    ```
+
+6.  **Jalankan Bot**:
+    ```bash
+    npm start
+    ```
+
 ## 📁 Project Structure
 
 ```
