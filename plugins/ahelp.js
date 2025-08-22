@@ -53,6 +53,9 @@ function parseDuration(durationStr) {
 }
 
 export async function handleModerationCallback(conn, cb) {
+    // Answer immediately
+    conn.answerCallbackQuery(cb.id).catch(() => {});
+
     const { data, message } = cb;
     const chatId = message.chat.id;
 
@@ -88,7 +91,6 @@ export async function handleModerationCallback(conn, cb) {
             message_id: message.message_id,
             reply_markup: null // Remove buttons
         });
-        await conn.answerCallbackQuery(cb.id);
 
     } catch (err) {
         console.error('Moderation callback error:', err);

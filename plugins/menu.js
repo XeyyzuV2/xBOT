@@ -98,6 +98,9 @@ const handler = async ({ conn, m }) => {
 // --- Callback Handler ---
 
 export async function handleMenuCallback(conn, cb) {
+    // Answer the callback immediately to prevent "query is too old" errors
+    conn.answerCallbackQuery(cb.id).catch(() => {});
+
     const { data, message } = cb;
     const chatId = message.chat.id;
     
@@ -173,8 +176,6 @@ export async function handleMenuCallback(conn, cb) {
             // Ignore error if message is not modified
         }
     }
-    
-    await conn.answerCallbackQuery(cb.id);
 }
 
 

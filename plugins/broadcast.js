@@ -46,11 +46,14 @@ const handler = async ({ conn, m, text }) => {
 };
 
 export async function handleBroadcastCallback(conn, cb) {
+    // Answer immediately
+    conn.answerCallbackQuery(cb.id).catch(() => {});
+
     const [,, action, messageId] = cb.data.split(':');
     const fromId = cb.from.id;
 
     if (!isOwner(fromId)) {
-        return conn.answerCallbackQuery(cb.id, { text: 'Anda tidak diizinkan melakukan ini.' });
+        return; // No need to answer again
     }
 
     const originalMessageContent = pendingBroadcasts[messageId];
@@ -59,7 +62,7 @@ export async function handleBroadcastCallback(conn, cb) {
             chat_id: cb.message.chat.id,
             message_id: cb.message.message_id
         });
-        return conn.answerCallbackQuery(cb.id);
+        return;
     }
 
     if (action === 'cancel') {
@@ -68,7 +71,7 @@ export async function handleBroadcastCallback(conn, cb) {
             chat_id: cb.message.chat.id,
             message_id: cb.message.message_id
         });
-        return conn.answerCallbackQuery(cb.id);
+        return;
     }
 
     if (action === 'send') {
@@ -106,8 +109,6 @@ export async function handleBroadcastCallback(conn, cb) {
         const duration = ((Date.now() - startTime) / 1000).toFixed(2);
         const reportMessage = `✅ Broadcast selesai.\n\nBerhasil: ${successCount}/${total}\nGagal: ${failureCount}\nWaktu: ${duration} detik`;
         await conn.sendMessage(cb.message.chat.id, reportMessage);
-
-        return conn.answerCallbackQuery(cb.id);
     }
 }
 
