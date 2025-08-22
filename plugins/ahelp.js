@@ -1,4 +1,4 @@
-import { requireAdmin } from '../utils.js';
+import { requireAdmin, isGroupAdmin } from '../utils.js';
 import { t } from '../i18n.js';
 
 const handler = async ({ conn, m }) => {
