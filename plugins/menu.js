@@ -179,8 +179,8 @@ export async function handleMenuCallback(conn, cb) {
 }
 
 
-handler.command = ['menu', 'settings'];
-handler.help = ['menu'];
+handler.command = ['start', 'menu', 'settings'];
+handler.help = ['start', 'menu'];
 handler.tags = ['main', 'admin'];
 handler.group = true;
 handler.private = false;
