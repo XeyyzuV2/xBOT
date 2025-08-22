@@ -73,7 +73,7 @@
     "invalid": "Invalid theme. Available themes: {themes}",
     "set_success": "✅ Theme has been changed to: {theme}",
     "list_header": "🎨 *Select a Theme*\n\nAvailable themes:",
-    "list_usage": "\n\nUse \`/theme set <theme_name>\` to change."
+    "list_usage": "\n\nUse `/theme set <theme_name>` to change."
   },
   "antispam": {
     "enabled": "✅ Anti-Spam has been enabled.",

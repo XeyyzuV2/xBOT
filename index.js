@@ -20,7 +20,7 @@ import config from './config.js'
 import * as utils from './utils.js'
 import { getGroupConfig } from './config-manager.js'
 import { recordMessage, checkSpam } from './spam-tracker.js'
-import { handleNewMember, handleVerification } from './plugins/welcome.js'
+import { handleNewMember, handleVerification } from './handlers/welcome_handler.js'
 import { logEvent } from './logger.js'
 import { handleBroadcastCallback } from './plugins/broadcast.js';
 import { handleMenuCallback } from './plugins/menu.js';
