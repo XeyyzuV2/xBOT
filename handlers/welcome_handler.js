@@ -107,6 +107,9 @@ export async function handleNewMember(conn, msg) {
  * @param {object} cb The callback query object.
  */
 export async function handleVerification(conn, cb) {
+  // Answer immediately
+  conn.answerCallbackQuery(cb.id).catch(() => {});
+
   const [,, targetUserId] = cb.data.split('_');
   const fromId = cb.from.id;
   const chatId = cb.message.chat.id;
@@ -134,8 +137,6 @@ export async function handleVerification(conn, cb) {
         chat_id: chatId,
         message_id: messageId,
     });
-
-    await conn.answerCallbackQuery(cb.id, { text: 'Verifikasi berhasil!' });
 
   } catch (err) {
     console.error(`Verification handling error for user ${fromId} in chat ${chatId}:`, err.message);

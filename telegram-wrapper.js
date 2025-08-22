@@ -1,4 +1,24 @@
+import Bottleneck from 'bottleneck';
+
 let botInstance = null;
+
+// Create a limiter instance.
+// This will ensure 1 operation per 400ms to stay within Telegram's general limits.
+const limiter = new Bottleneck({
+    maxConcurrent: 1,
+    minTime: 400
+});
+
+// Configure bottleneck to handle retries on rate limit errors
+limiter.on('failed', async (error, jobInfo) => {
+    const statusCode = error.response?.statusCode;
+    if (statusCode === 429) {
+        const retryAfter = error.response.parameters.retry_after;
+        console.warn(`Rate limit hit. Retrying after ${retryAfter}s.`);
+        return retryAfter * 1000; // Return retry delay in ms
+    }
+});
+
 
 /**
  * Initializes the wrapper with the bot instance.
@@ -9,55 +29,59 @@ export function init(bot) {
 }
 
 /**
- * A generic wrapper for Telegram API calls that handles retries with exponential backoff.
- * @param {string} method The name of the bot method to call (e.g., 'sendMessage').
- * @param {any[]} args The arguments to pass to the method.
- * @returns {Promise<any>} The result of the API call.
+ * A generic function to wrap bot methods with the rate limiter and custom error handling.
+ * @param {string} method The name of the bot method to call.
+ * @returns {Function} The wrapped function.
  */
-async function apiWrapper(method, ...args) {
-    if (!botInstance) {
-        throw new Error('Telegram Wrapper not initialized. Call init(bot) first.');
-    }
+function wrapMethod(method) {
+    const wrappedFn = async (...args) => {
+        if (!botInstance) throw new Error('Telegram Wrapper not initialized.');
+        return botInstance[method](...args);
+    };
 
-    let retries = 5;
-    let delay = 1000; // Start with 1 second
+    return limiter.wrap(wrappedFn);
+}
 
-    while (retries > 0) {
+/**
+ * A special wrapper for methods where certain errors should be ignored.
+ * @param {string} method The name of the bot method.
+ * @param {string[]} ignoreMessages A list of error message substrings to ignore.
+ * @returns {Function} The wrapped function with custom error handling.
+ */
+function wrapMethodAndIgnoreErrors(method, ignoreMessages = []) {
+    const wrappedFn = async (...args) => {
+        if (!botInstance) throw new Error('Telegram Wrapper not initialized.');
         try {
             return await botInstance[method](...args);
         } catch (error) {
-            const statusCode = error.response?.statusCode;
-            if (statusCode === 429 || (statusCode >= 500 && statusCode < 600)) {
-                console.warn(`Telegram API error (Status ${statusCode}). Retrying in ${delay / 1000}s... (${retries - 1} retries left)`);
-                await new Promise(resolve => setTimeout(resolve, delay));
-                delay *= 2; // Exponentially increase delay
-                retries--;
-            } else {
-                // Not a retryable error, re-throw it to be handled by the caller
-                throw error;
+            // Silently ignore specific, non-critical errors
+            if (ignoreMessages.some(msg => error.message.includes(msg))) {
+                return null; // Resolve with null
             }
+            // For all other errors, re-throw to be handled by bottleneck or the caller
+            throw error;
         }
-    }
-    // If all retries fail, throw an error
-    throw new Error(`Max retries exceeded for method ${method}.`);
+    };
+
+    return limiter.wrap(wrappedFn);
 }
 
+
 // Export the wrapped methods that the bot uses.
-// We don't need to wrap every single method, just the ones used in the plugins.
 export const conn = {
-    sendMessage: (...args) => apiWrapper('sendMessage', ...args),
-    editMessageText: (...args) => apiWrapper('editMessageText', ...args),
-    deleteMessage: (...args) => apiWrapper('deleteMessage', ...args),
-    answerCallbackQuery: (...args) => apiWrapper('answerCallbackQuery', ...args),
-    sendDocument: (...args) => apiWrapper('sendDocument', ...args),
-    sendPhoto: (...args) => apiWrapper('sendPhoto', ...args),
-    sendVideo: (...args) => apiWrapper('sendVideo', ...args),
-    banChatMember: (...args) => apiWrapper('banChatMember', ...args),
-    unbanChatMember: (...args) => apiWrapper('unbanChatMember', ...args),
-    restrictChatMember: (...args) => apiWrapper('restrictChatMember', ...args),
-    promoteChatMember: (...args) => apiWrapper('promoteChatMember', ...args),
-    pinChatMessage: (...args) => apiWrapper('pinChatMessage', ...args),
-    getChatMember: (...args) => apiWrapper('getChatMember', ...args),
-    getFileStream: (...args) => apiWrapper('getFileStream', ...args),
-    getMe: (...args) => apiWrapper('getMe', ...args),
+    sendMessage: wrapMethod('sendMessage'),
+    editMessageText: wrapMethodAndIgnoreErrors('editMessageText', ['message is not modified']),
+    deleteMessage: wrapMethod('deleteMessage'),
+    answerCallbackQuery: wrapMethodAndIgnoreErrors('answerCallbackQuery', ['query is too old']),
+    sendDocument: wrapMethod('sendDocument'),
+    sendPhoto: wrapMethod('sendPhoto'),
+    sendVideo: wrapMethod('sendVideo'),
+    banChatMember: wrapMethod('banChatMember'),
+    unbanChatMember: wrapMethod('unbanChatMember'),
+    restrictChatMember: wrapMethod('restrictChatMember'),
+    promoteChatMember: wrapMethod('promoteChatMember'),
+    pinChatMessage: wrapMethod('pinChatMessage'),
+    getChatMember: wrapMethod('getChatMember'),
+    getFileStream: wrapMethod('getFileStream'),
+    getMe: wrapMethod('getMe'),
 };

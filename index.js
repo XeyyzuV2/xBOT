@@ -45,7 +45,21 @@ console.log(gradient(`
 console.log(chalk.cyan.bold('                                     ✨ xBOT Version ✨'))
 console.log(chalk.magenta.italic('                                    👨‍💻 by XeyLabs 👨‍💻\n'))
 
-const bot = new TelegramBot(config.telegramBotToken, { polling: true })
+const bot = new TelegramBot(config.telegramBotToken, {
+    polling: {
+        interval: 500,
+        params: { timeout: 50, limit: 50 }
+    }
+});
+
+// Clear any existing webhooks before truly starting
+bot.deleteWebHook({ drop_pending_updates: true })
+  .then(success => {
+    if (success) console.log('Webhook cleared successfully. Starting polling.');
+  })
+  .catch(err => console.error('Error clearing webhook:', err.message));
+
+
 initWrapper(bot); // Initialize the API wrapper
 const plugins = new Map()
 const pluginsDir = path.join(process.cwd(), 'plugins')
